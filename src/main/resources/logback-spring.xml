@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    <springProperty scope="context" name="springAppVersion" source="spring.application.version"/>
+    <contextName>${springAppName}</contextName>
+
+    <!-- Console Appender -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <mdc>
+                    <includeMdcKeyName>action</includeMdcKeyName>
+                    <includeMdcKeyName>user</includeMdcKeyName>
+                    <includeMdcKeyName>logType</includeMdcKeyName>
+                    <includeMdcKeyName>commonIdentifier</includeMdcKeyName>
+                    <includeMdcKeyName>exception</includeMdcKeyName>
+                    <includeMdcKeyName>message</includeMdcKeyName>
+                </mdc>
+                <timestamp>
+                    <fieldName>Timestamp/UTC</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel>
+                    <fieldName>Level</fieldName>
+                </logLevel>
+                <threadName>
+                    <fieldName>Thread</fieldName>
+                </threadName>
+                <contextName>
+                    <fieldName>ServiceName</fieldName>
+                </contextName>
+                <pattern>
+                    <!-- the pattern that defines what to include -->
+                    <pattern>
+                        {
+                        "ServiceVersion": "${springAppVersion}",
+                        "ServiceHostName": "${hostname}",
+                        "PID": "${PID:-}"
+                        }
+                    </pattern>
+                </pattern>
+                <arguments>
+                    <includeNonStructuredArguments>true</includeNonStructuredArguments>
+                </arguments>
+                <loggerName>
+                    <fieldName>Logger</fieldName>
+                </loggerName>
+                <callerData>
+                    <classFieldName>Class</classFieldName>
+                    <methodFieldName>Method</methodFieldName>
+                    <fileFieldName>File</fileFieldName>
+                    <lineFieldName>Line</lineFieldName>
+                </callerData>
+                <message>
+                    <fieldName>Message</fieldName>
+                </message>
+                <throwableClassName>
+                    <fieldName>ExceptionClass</fieldName>
+                </throwableClassName>
+                <stackTrace>
+                    <fieldName>StackTrace</fieldName>
+                    <!-- maxLength - limit the length of the stack trace -->
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>200</maxDepthPerThrowable>
+                        <maxLength>5000</maxLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- TCP Appender for Logstash -->
+    <appender name="logstashTcp" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>localhost:4040</destination>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <mdc>
+                    <includeMdcKeyName>action</includeMdcKeyName>
+                    <includeMdcKeyName>user</includeMdcKeyName>
+                    <includeMdcKeyName>logType</includeMdcKeyName>
+                    <includeMdcKeyName>commonIdentifier</includeMdcKeyName>
+                    <includeMdcKeyName>exception</includeMdcKeyName>
+                    <includeMdcKeyName>message</includeMdcKeyName>
+                </mdc>
+                <timestamp>
+                    <fieldName>Timestamp/UTC</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel>
+                    <fieldName>Level</fieldName>
+                </logLevel>
+                <threadName>
+                    <fieldName>Thread</fieldName>
+                </threadName>
+                <contextName>
+                    <fieldName>ServiceName</fieldName>
+                </contextName>
+                <pattern>
+                    <!-- the pattern that defines what to include -->
+                    <pattern>
+                        {
+                        "ServiceVersion": "${springAppVersion}",
+                        "ServiceHostName": "${hostname}",
+                        "PID": "${PID:-}"
+                        }
+                    </pattern>
+                </pattern>
+                <mdc>
+                    <includeMdcKeyName>user</includeMdcKeyName>
+                </mdc>
+                <arguments>
+                    <includeNonStructuredArguments>true</includeNonStructuredArguments>
+                </arguments>
+                <loggerName>
+                    <fieldName>Logger</fieldName>
+                </loggerName>
+                <callerData>
+                    <classFieldName>Class</classFieldName>
+                    <methodFieldName>Method</methodFieldName>
+                    <fileFieldName>File</fileFieldName>
+                    <lineFieldName>Line</lineFieldName>
+                </callerData>
+                <message>
+                    <fieldName>Message</fieldName>
+                </message>
+                <throwableClassName>
+                    <fieldName>ExceptionClass</fieldName>
+                </throwableClassName>
+                <stackTrace>
+                    <fieldName>StackTrace</fieldName>
+                    <!-- maxLength - limit the length of the stack trace -->
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>200</maxDepthPerThrowable>
+                        <maxLength>5000</maxLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="console"/>
+        <appender-ref ref="logstashTcp"/>
+    </root>
+</configuration>
+
+
+
+        <!--<?xml version="1.0" encoding="UTF-8"?>
+        <configuration>
+            <springProperty scope="context" name="appName" source="spring.application.name"/>
+
+            &lt;!&ndash; Appenders &ndash;&gt;
+            <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <customFields>{"app_name":"${appName}"}</customFields>
+                </encoder>
+            </appender>
+
+            &lt;!&ndash; File Appender &ndash;&gt;
+            <appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
+                <file>${LOG_PATH:-C:/Projects/elk-stack-logging-example/logs/elk-stack.log}</file>
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <customFields>{"app_name":"${appName}"}</customFields>
+                </encoder>
+            </appender>
+
+            &lt;!&ndash; Logger &ndash;&gt;
+            <logger name="com.journaldev.elk" level="INFO"/>
+
+            &lt;!&ndash; Root Logger &ndash;&gt;
+            <root level="INFO">
+                <appender-ref ref="consoleAppender"/>
+                <appender-ref ref="fileAppender"/> &lt;!&ndash; Add this line to include the file appender &ndash;&gt;
+            </root>
+        </configuration>-->
